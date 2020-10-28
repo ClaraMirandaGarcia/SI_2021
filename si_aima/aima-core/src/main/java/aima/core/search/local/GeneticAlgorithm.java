@@ -251,10 +251,13 @@ public class GeneticAlgorithm<A> {
 		// for i = 1 to SIZE(population) do
 		for (int i = 0; i < population.size(); i++) {
 			// x <- RANDOM-SELECTION(population, FITNESS-FN)
+			//no todos tienen la misma probabilidad de selección, los que tienen fitness grande saldrán más veces
 			Individual<A> x = randomSelection(population, fitnessFn);
 			// y <- RANDOM-SELECTION(population, FITNESS-FN)
 			Individual<A> y = randomSelection(population, fitnessFn);
 			// child <- REPRODUCE(x, y)
+			//OPERADOR DE CRUCE
+			//Se hace de forma incondicional, la prob de cruce es uno
 			Individual<A> child = reproduce(x, y);
 			// if (small random probability) then child <- MUTATE(child)
 			if (random.nextDouble() <= mutationProbability) {
@@ -302,6 +305,7 @@ public class GeneticAlgorithm<A> {
 		// n <- LENGTH(x);
 		// Note: this is = this.individualLength
 		// c <- random number from 1 to n
+		// c -> PUNTO DE CRUCE
 		int c = randomOffset(individualLength);
 		// return APPEND(SUBSTRING(x, 1, c), SUBSTRING(y, c+1, n))
 		List<A> childRepresentation = new ArrayList<A>();
@@ -311,6 +315,7 @@ public class GeneticAlgorithm<A> {
 		return new Individual<A>(childRepresentation);
 	}
 
+	//SIN REPETICIONES
 	protected Individual<A> reproduce2(Individual<A> x, Individual<A> y) {
 		List<A> childRepresentation = new ArrayList<A>();
 		// operador ox

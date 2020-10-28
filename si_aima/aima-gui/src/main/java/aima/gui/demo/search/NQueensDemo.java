@@ -33,7 +33,7 @@ import java.util.function.Predicate;
 public class NQueensDemo {
 
 	// FIXES THE BOARD SIZE: 4,8,16,32 -> usar tambien tamaños 4 y 6
-	private static final int boardSize = 6;
+	private static final int boardSize = 16;
 
 	public static void main(String[] args) {
 		startNQueensDemo();

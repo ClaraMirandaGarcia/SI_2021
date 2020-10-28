@@ -15,8 +15,8 @@ import aima.core.util.datastructure.XYLocation;
  * A class whose purpose is to provide static utility methods for solving the
  * n-queens problem with genetic algorithms. This includes fitness function,
  * goal test, random creation of individuals and convenience methods for
- * translating between between an NQueensBoard representation and the Integer list
- * representation used by the GeneticAlgorithm.
+ * translating between between an NQueensBoard representation and the Integer
+ * list representation used by the GeneticAlgorithm.
  * 
  * @author Ciaran O'Reilly
  * @author Ruediger Lunde
@@ -27,18 +27,25 @@ public class NQueensGenAlgoUtil {
 	public static FitnessFunction<Integer> getFitnessFunction() {
 		return new NQueensFitnessFunction();
 	}
-	
+
 	public static Predicate<Individual<Integer>> getGoalTest() {
 		return new NQueensGenAlgoGoalTest();
 	}
-	
 
+	// exercise2
 	public static Individual<Integer> generateRandomIndividual(int boardSize) {
 		List<Integer> individualRepresentation = new ArrayList<>();
+		//Los cromosomas iniciales son permutaciones
 		for (int i = 0; i < boardSize; i++) {
-			individualRepresentation.add(new Random().nextInt(boardSize));
+			// individualRepresentation.add(new Random().nextInt(boardSize)); -> número
+			// random entre 0 y n, con o que el mismo núm puede aparecer muchas veces, no es
+			// una permutación de verdad
+			individualRepresentation.add(i);
+
 		}
-		//Change class 5
+
+		// Baraja de forma que queda una permutación aleatoria obtenida con una
+		// permutación uniforme, cualquier permutación tiene la misma prob de aparecer
 		Collections.shuffle(individualRepresentation);
 		return new Individual<>(individualRepresentation);
 	}
@@ -52,7 +59,7 @@ public class NQueensGenAlgoUtil {
 
 		return fab;
 	}
-	
+
 	public static class NQueensFitnessFunction implements FitnessFunction<Integer> {
 
 		public double apply(Individual<Integer> individual) {
