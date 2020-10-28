@@ -126,12 +126,17 @@ public class GeneticAlgorithm<A> {
 		validatePopulation(population);
 		updateMetrics(population, 0, 0L);
 
+		bestIndividual = retrieveBestIndividual(population, fitnessFn);
+		// Generación inicial
+		System.out.println("\nGen: -1" + " AvgFitness: " + averageFitness(population, fitnessFn) + " BestFitness: "
+				+ fitnessFn.apply(bestIndividual));
+
 		long startTime = System.currentTimeMillis();
 
 		// repeat
 		int itCount = 0;
 		do {
-			population = nextGeneration(population, fitnessFn);
+			population = nextGeneration(population, fitnessFn, bestIndividual);
 			bestIndividual = retrieveBestIndividual(population, fitnessFn);
 
 			// Monitorizamos el f_medio y el f_mejor
@@ -245,19 +250,21 @@ public class GeneticAlgorithm<A> {
 	 * Primitive operation which is responsible for creating the next generation.
 	 * Override to get progress information!
 	 */
-	protected List<Individual<A>> nextGeneration(List<Individual<A>> population, FitnessFunction<A> fitnessFn) {
+	protected List<Individual<A>> nextGeneration(List<Individual<A>> population, FitnessFunction<A> fitnessFn,
+			Individual<A> bestBefore) {
 		// new_population <- empty set
 		List<Individual<A>> newPopulation = new ArrayList<>(population.size());
 		// for i = 1 to SIZE(population) do
-		for (int i = 0; i < population.size(); i++) {
+		for (int i = 0; i < population.size() - 1; i++) { // -1 para elitismo
 			// x <- RANDOM-SELECTION(population, FITNESS-FN)
-			//no todos tienen la misma probabilidad de selección, los que tienen fitness grande saldrán más veces
+			// no todos tienen la misma probabilidad de selección, los que tienen fitness
+			// grande saldrán más veces
 			Individual<A> x = randomSelection(population, fitnessFn);
 			// y <- RANDOM-SELECTION(population, FITNESS-FN)
 			Individual<A> y = randomSelection(population, fitnessFn);
 			// child <- REPRODUCE(x, y)
-			//OPERADOR DE CRUCE
-			//Se hace de forma incondicional, la prob de cruce es uno
+			// OPERADOR DE CRUCE
+			// Se hace de forma incondicional, la prob de cruce es uno
 			Individual<A> child = reproduce(x, y);
 			// if (small random probability) then child <- MUTATE(child)
 			if (random.nextDouble() <= mutationProbability) {
@@ -266,6 +273,7 @@ public class GeneticAlgorithm<A> {
 			// add child to new_population
 			newPopulation.add(child);
 		}
+		newPopulation.add(bestBefore); // Garantiza que siempre tenemos el mejor incluso de la generación anterior
 		notifyProgressTrackers(getIterations(), population);
 		return newPopulation;
 	}
@@ -278,9 +286,23 @@ public class GeneticAlgorithm<A> {
 
 		// Determine all of the fitness values
 		double[] fValues = new double[population.size()];
+		double minFitness = fitnessFn.apply(population.get(0));
 		for (int i = 0; i < population.size(); i++) {
+
 			fValues[i] = fitnessFn.apply(population.get(i));
+			if (minFitness > fValues[i]) {
+				minFitness = fValues[i];
+			}
+
 		}
+
+		// Escalado del fitness -> restar el miFitness a todos ->
+		for (int i = 0; i < population.size(); i++) {
+			fValues[i] -= minFitness;
+			// Escalado más grande, eleva los valores al cuadrado
+			fValues[i] = Math.pow(fValues[i], 2);
+		}
+
 		// Normalize the fitness values
 		fValues = Util.normalize(fValues);
 		double prob = random.nextDouble();
@@ -315,14 +337,6 @@ public class GeneticAlgorithm<A> {
 		return new Individual<A>(childRepresentation);
 	}
 
-	//SIN REPETICIONES
-	protected Individual<A> reproduce2(Individual<A> x, Individual<A> y) {
-		List<A> childRepresentation = new ArrayList<A>();
-		// operador ox
-		// clase
-		return new Individual<A>(childRepresentation);
-	}
-
 	protected Individual<A> mutate(Individual<A> child) {
 		int mutateOffset = randomOffset(individualLength);
 		int alphaOffset = randomOffset(finiteAlphabet.size());
@@ -332,6 +346,45 @@ public class GeneticAlgorithm<A> {
 		mutatedRepresentation.set(mutateOffset, finiteAlphabet.get(alphaOffset));
 
 		return new Individual<A>(mutatedRepresentation);
+	}
+
+	// SIN REPETICIONES
+	protected Individual<A> reproduce2(Individual<A> firstParent, Individual<A> secondParent) {
+		int individualLength = firstParent.length();
+
+		int p1 = randomOffset(individualLength);
+		int p2 = randomOffset(individualLength);
+
+		List<A> xArray = firstParent.getRepresentation();
+		List<A> yArray = secondParent.getRepresentation();
+		List<A> offArray = new ArrayList<A>(xArray);
+
+		int k = p2;
+
+		for (int i = 0; i < individualLength; i++) {
+			int j = p1;
+
+			while (j < p2 + (p2 <= p1 ? individualLength : 0) && yArray.get(i) != xArray.get(j % individualLength))
+				j++;
+			if (j == p2 + (p2 <= p1 ? individualLength : 0)) {
+				offArray.set(k % individualLength, yArray.get(i));
+				k++;
+			}
+		}
+		return new Individual<A>(offArray);
+	}
+
+	protected Individual<A> mutate2(Individual<A> cromosome) {
+		int individualLength = cromosome.length();
+
+		int p = randomOffset(individualLength - 1);
+		int c = randomOffset(individualLength - 1);
+		List<A> mutatedRepresentation = new ArrayList<A>(cromosome.getRepresentation());
+
+		A temp = mutatedRepresentation.get(p);
+		mutatedRepresentation.set(p, mutatedRepresentation.get(c));
+		mutatedRepresentation.set(c, temp);
+		return (new Individual<A>(mutatedRepresentation));
 	}
 
 	protected int randomOffset(int length) {
