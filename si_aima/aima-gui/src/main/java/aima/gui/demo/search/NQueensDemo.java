@@ -32,8 +32,8 @@ import java.util.function.Predicate;
 
 public class NQueensDemo {
 
-	// FIXES THE BOARD SIZE: 4,8,16,32 -> usar tambien tamaños 4 y 6
-	private static final int boardSize = 16;
+	// FIXES THE BOARD SIZE: 4,8,16,24,32 -> usar tambien tamaños 4 y 6
+	private static final int boardSize = 8;
 
 	public static void main(String[] args) {
 		startNQueensDemo();
@@ -183,9 +183,9 @@ public class NQueensDemo {
 	private static void solveNQueensWithGeneticAlgorithmSearch() {
 		System.out.println("\n--- NQueensDemo GeneticAlgorithm ---");
 
-		final int popSize = 50; // 100
+		final int popSize = 100; // 100
 		final double mutationProbability = 0.15;// Pc=1.0
-		final int numberOfGenerations = 50; // 1000
+		final int numberOfGenerations = 100; // 1000
 
 		FitnessFunction<Integer> fitnessFunction = NQueensGenAlgoUtil.getFitnessFunction();
 		Predicate<Individual<Integer>> goalTest = NQueensGenAlgoUtil.getGoalTest();

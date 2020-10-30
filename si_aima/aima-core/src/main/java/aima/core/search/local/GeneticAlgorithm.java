@@ -265,10 +265,10 @@ public class GeneticAlgorithm<A> {
 			// child <- REPRODUCE(x, y)
 			// OPERADOR DE CRUCE
 			// Se hace de forma incondicional, la prob de cruce es uno
-			Individual<A> child = reproduce(x, y);
+			Individual<A> child = reproduce2(x, y);
 			// if (small random probability) then child <- MUTATE(child)
 			if (random.nextDouble() <= mutationProbability) {
-				child = mutate(child);
+				child = mutate2(child);
 			}
 			// add child to new_population
 			newPopulation.add(child);
